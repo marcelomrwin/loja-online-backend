@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    username: lojaonline
+    password: lojaonline
+    url: jdbc:postgresql://localhost:5432/lojaonline
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.PostgreSQL94Dialect
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    show-sql: true
+server:
+  port: 8090
+joinfaces:
+  jsf:
+    PROJECT_STAGE: Development
+  primefaces: 
+    theme: omega    
+    FONT_AWESOME: true

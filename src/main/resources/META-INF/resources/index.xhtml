@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+	<title>Loja Online</title>
+
+	<style type="text/css">
+.ui-widget {
+	font-size: 1em !important;
+}
+
+.ui-datatable .ui-datatable-footer {
+	text-align: left;
+}
+
+.ui-panel .ui-panel-content {
+	padding: .1em;
+	.5
+	em;
+}
+
+.ui-panelgrid .ui-panelgrid-cell {
+	padding: 2px 5px;
+}
+
+#compraGrid>tbody>tr {
+	vertical-align: top;
+}
+
+#tabView\:listaProdutosform\:painelProduto>tbody>tr {
+	font-size: medium;
+}
+
+#clienteDetail {
+	font-size: larger;
+}
+
+#clienteDetail_header {
+	align-content: center;
+	text-align: center;
+}
+</style>
+
+</h:head>
+
+<h:body>
+
+	<p:tabView orientation="left" id="tabView">
+		<p:tab title="Lista de Clientes">
+			<h:form id="clientesform">
+
+				<p:dataTable id="clienteTable" var="cliente"
+					value="#{viewController.listaClientes}" widgetVar="clienteTable"
+					multiViewState="true" rows="10" paginator="true"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15" selectionMode="single"
+					selection="#{viewController.compra.cliente}" rowKey="#{cliente.id}"
+					emptyMessage="Não há clientes disponíveis"
+					filteredValue="#{viewController.filtroClientes}">
+
+					<p:ajax event="rowSelect" update=":clienteDetail" />
+					<p:ajax event="rowUnselect"
+						listener="#{viewController.onRowClienteUnselect}"
+						update=":clienteDetail" />
+
+					<p:column headerText="Id">
+						<h:outputText value="#{cliente.id}" />
+					</p:column>
+
+					<p:column headerText="Nome">
+						<h:outputText value="#{cliente.nome}" />
+					</p:column>
+
+					<p:column headerText="Nivel">
+						<h:outputText value="#{cliente.nivel}" />
+					</p:column>
+
+					<p:column headerText="Idade">
+						<h:outputText value="#{cliente.idade}" />
+					</p:column>
+
+					<p:column headerText="CEP">
+						<h:outputText value="#{cliente.endereco.cep}" />
+					</p:column>
+
+				</p:dataTable>
+
+			</h:form>
+		</p:tab>
+		<p:tab title="Lista de Produtos" id="tabProdutos">
+
+			<h:form id="listaProdutosform">
+
+				<p:dataTable id="produtosTable" widgetVar="produtosTable"
+					var="produto" value="#{viewController.listaProdutos}"
+					selection="#{viewController.produtoSelect}" rowKey="#{produto.id}"
+					selectionMode="single" emptyMessage="Não há produtos disponíveis">
+
+					<p:ajax event="rowSelect"
+						update="tabView:listaProdutosform:produtoDetail" />
+
+					<p:column headerText="Codigo">
+						<h:outputText value="#{produto.codigo}" />
+					</p:column>
+					<p:column headerText="Descrição">
+						<h:outputText value="#{produto.descricao}" />
+					</p:column>
+					<p:column headerText="Valor Unitário">
+						<h:outputText value="#{produto.valorUnitario}">
+							<f:convertNumber type="currency" currencySymbol="R$" />
+						</h:outputText>
+					</p:column>
+
+				</p:dataTable>
+
+				<p:outputPanel id="produtoDetail" widgetVar="produtoDetail">
+					<p:panelGrid rendered="#{not empty viewController.produtoSelect}"
+						style="width: 100%; border-style: none;" id="painelProduto">
+						<p:row>
+							<p:column style="border-style: none;">
+								<p:graphicImage library="img"
+									name="#{viewController.produtoSelect.thumb}"
+									style="max-height: 100px; max-width: 150px;" />
+							</p:column>
+							<p:column style="border-style: none;">
+								<h:outputText value="#{viewController.produtoSelect.descricao}" />
+							</p:column>
+							<p:column style="border-style: none;">
+								<h:outputText
+									value="#{viewController.produtoSelect.valorUnitario}">
+									<f:convertNumber type="currency" />
+								</h:outputText>
+							</p:column>
+							<p:column style="border-style: none;">
+								<h:panelGrid columns="2" cellpadding="5">
+									<h:outputLabel for="minMax" value="Quantidade:" />
+									<p:spinner id="minMax" value="#{viewController.quantity}"
+										min="1" max="100" />
+								</h:panelGrid>
+							</p:column>
+							<p:column
+								style="text-align: center; border-style: none; font-size: 1.5em;">
+								<p:commandButton value="Adicionar"
+									action="#{viewController.adicionarProduto()}"
+									update=":compraForm :totalCompraPanel" />
+							</p:column>
+						</p:row>
+					</p:panelGrid>
+				</p:outputPanel>
+
+			</h:form>
+
+		</p:tab>
+		<p:tab title="Finalizar Compra">
+
+		</p:tab>
+	</p:tabView>
+
+	<p:panelGrid style="width: 100%; border-style: none;" id="compraGrid">
+
+		<p:row>
+			<p:column style="border-style: none;">
+
+				<p:panel id="clienteDetail" style="min-width: 200px;">
+					<f:facet name="header">
+						<h:outputText value="Cliente Selecionado" />
+					</f:facet>
+					<p:panelGrid columns="2"
+						rendered="#{not empty viewController.compra.cliente}"
+						layout="grid">
+
+						<h:outputLabel value="Id:" />
+						<h:outputText value="#{viewController.compra.cliente.id}" />
+
+						<h:outputLabel value="Nome:" />
+						<h:outputText value="#{viewController.compra.cliente.nome}" />
+
+						<h:outputLabel value="Nivel:" />
+						<h:outputText value="#{viewController.compra.cliente.nivel}" />
+
+						<h:outputLabel value="Idade" />
+						<h:outputText value="#{viewController.compra.cliente.idade}" />
+
+						<h:outputLabel value="Cep:" />
+						<h:outputText
+							value="#{viewController.compra.cliente.endereco.cep}" />
+					</p:panelGrid>
+				</p:panel>
+			</p:column>
+
+			<p:column style="border-style: none;">
+				<h:form id="compraForm">
+					<p:dataTable id="produtoCompraTable" widgetVar="produtoCompraTable"
+						var="prod" value="#{viewController.compra.produtos}"
+						selectionMode="single"
+						selection="#{viewController.produtoCompraSelect}"
+						rowKey="#{prod.uuid}" emptyMessage="Não há produtos disponíveis">
+
+						<f:facet name="header">
+							<h:outputText value="Produtos Selecionados" />
+						</f:facet>
+
+						<p:column headerText="Codigo">
+							<h:outputText value="#{prod.produto.codigo}" />
+						</p:column>
+						<p:column headerText="Descrição">
+							<h:outputText value="#{prod.produto.descricao}" />
+						</p:column>
+						<p:column headerText="Valor Unitário" style="text-align: right;">
+							<h:outputText value="#{prod.produto.valorUnitario}">
+								<f:convertNumber type="currency" />
+							</h:outputText>
+						</p:column>
+						<p:column headerText="Quantidade" style="text-align: center">
+							<h:outputText value="#{prod.quantidade}" />
+						</p:column>
+						<p:column headerText="Total" style="text-align: right;">
+							<h:outputText value="#{prod.valorTotal}">
+								<f:convertNumber type="currency" />
+							</h:outputText>
+						</p:column>
+						<f:facet name="footer">
+							<p:commandButton process="produtoCompraTable"
+								update=":compraForm :totalCompraPanel" icon="fa fa-fw fa-remove"
+								value="Excluir" action="#{viewController.excluirProduto}" />
+
+						</f:facet>
+					</p:dataTable>
+				</h:form>
+
+			</p:column>
+			<p:column style="border-style: none;">
+				<p:panel id="totalCompraPanel" style="min-width: 300px;">
+					<f:facet name="header">
+						<h:outputText value="Total da Compra" />
+					</f:facet>
+
+					<p:panelGrid columns="2" layout="grid">
+						<h:outputLabel value="Total de Itens:" />
+						<h:outputText value="#{viewController.totalDeItens()}" />
+
+						<h:outputLabel value="Valor dos produtos:" />
+						<h:outputText value="#{viewController.totalDosItens()}">
+							<f:convertNumber type="currency" />
+						</h:outputText>
+
+						<h:outputLabel value="Descontos:" />
+						<h:outputText value="#{viewController.valorTotalDescontos()}">
+							<f:convertNumber type="currency" />
+						</h:outputText>
+
+						<h:outputLabel value="Frete:" />
+						<h:outputText value="#{viewController.compra.frete}">
+							<f:convertNumber type="currency" />
+						</h:outputText>
+
+						<h:outputLabel value="Total da compra:" />
+						<h:outputText value="#{viewController.compra.valorTotal}">
+							<f:convertNumber type="currency" />
+						</h:outputText>
+
+					</p:panelGrid>
+
+				</p:panel>
+			</p:column>
+		</p:row>
+
+	</p:panelGrid>
+
+
+
+</h:body>
+</html>

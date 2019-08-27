@@ -1,0 +1,33 @@
+{
+  "lookup": "kieless",
+  "commands": [
+    {
+      "insert": {
+        "entry-point": "DEFAULT",
+        "out-identifier": "Compra",
+        "return-object": "true",
+        "object": {
+          "com.redhat.loja_online.Compra": {
+            "cliente": {
+              "id": 0,
+              "idade": 39,
+              "nivel": 1,
+              "endereco": {
+                "cep": 50931470
+              }
+            },
+            "valorTotal": 100
+          }
+        }
+      }
+    },
+    {
+      "start-process": {
+        "processId": "totalizar"
+      }
+    },
+    {
+      "fire-all-rules": {}
+    }
+  ]
+}

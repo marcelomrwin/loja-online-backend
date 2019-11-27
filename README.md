@@ -1,11 +1,14 @@
-# runtime-springboot
+Loja Online Backend
+===================
 
-Created by the Cloud App Generator
+### Projeto backend consumindo regras de negócio do Red Hat Decision Manager 7
+
+Github do projeto de regras [https://github.com/marcelomrwin/loja-online](https://github.com/marcelomrwin/loja-online)
 
 ## Init Postgres
 docker run --rm -d -p 5432:5432 -e POSTGRESQL\_USER=lojaonline -e POSTGRESQL\_PASSWORD=lojaonline -e POSTGRESQL\_DATABASE=lojaonline -e POSTGRESQL\_ADMIN_PASSWORD=lojaonline -v ~/data/postgres:/var/lib/postgresql/data registry.access.redhat.com/rhscl/postgresql-10-rhel7
 
-_Remove <b>-v ~/data/postgres:/var/lib/postgresql/data</b> if you don't need persistent volume_ 
+_Remove <b>-v ~/data/postgres:/var/lib/postgresql/data</b> if you don't need persistent volume_
 
 ## Execute application
 mvn spring-boot:run

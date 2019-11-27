@@ -20,6 +20,9 @@ import com.redhat.loja_online.Endereco;
 @RunWith(BlockJUnit4ClassRunner.class)
 public class ConvertObjJSONTest {
 
+	/**
+	 * O teste abaixo produz um payload para invocar o serviço REST do Decision Manager 7
+	 */
 	@Test
 	public void test() {
 

@@ -22,4 +22,6 @@ joinfaces:
     PROJECT_STAGE: Development
   primefaces: 
     theme: omega    
-    FONT_AWESOME: true
+    FONT_AWESOME: true    
+  adminfaces:
+    index-page: index.jsf

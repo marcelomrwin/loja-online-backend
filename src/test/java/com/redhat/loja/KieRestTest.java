@@ -69,6 +69,9 @@ public class KieRestTest {
 
 	@Test
 	@Ignore
+	/**
+	 * Demonstra como invocar o Decision Manager passando um payload de XML
+	 */
 	public void testCallXML() {
 
 		StringBuilder sb = new StringBuilder("<batch-execution lookup=\"kieless\">");
@@ -88,6 +91,9 @@ public class KieRestTest {
 
 	@Test
 //	@Ignore
+	/**
+	 * Demonstra como invocar o Decision Manager sem utilizar a API gerando todo o JSON manualmente
+	 */
 	public void testCallManualJSON() {
 		List<ProdutoCompra> prods = new ArrayList<>();
 		prods.add(ProdutoCompra.builder()
@@ -116,6 +122,9 @@ public class KieRestTest {
 
 	@Test
 //	@Ignore
+	/**
+	 * Demonstra como invocar o Decision Manager sem utilizar a API gerando JSON através de classes pojo.
+	 */
 	public void testCallGeneratedJSON() {
 		List<ExecutionCommand> commands = new ArrayList<>();
 		List<ProdutoCompra> prods = new ArrayList<>();
@@ -154,7 +163,10 @@ public class KieRestTest {
 	}
 
 	@Test
-//	@Ignore
+	@Ignore
+	/**
+	 * Demonstra como invocar o Decision Manager através da API Java
+	 */
 	public void testCallJavaAPI() {
 		try {
 			KieServicesConfiguration conf = KieServicesFactory.newRestConfiguration(
@@ -212,9 +224,12 @@ public class KieRestTest {
 	}
 
 	@Test
-//	@Ignore
+	@Ignore
+	/**
+	 * 	Um cliente de nivel 1 quando comprar acima de 10 itens deve ter 5% de desconto
+	 */
 	public void validarDescontoParaClienteNivel1() {
-		// cliente nivel 1 comprando acima de 10 itens tem 5% de desconto
+
 		KieServicesConfiguration conf = KieServicesFactory
 				.newRestConfiguration("http://localhost:8080/kie-server/services/rest/server", "rhdmAdmin", "r3dh4t1!");
 		conf.setMarshallingFormat(MarshallingFormat.JSON);

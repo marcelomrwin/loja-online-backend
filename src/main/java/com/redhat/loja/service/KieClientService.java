@@ -8,6 +8,7 @@ import org.kie.api.command.BatchExecutionCommand;
 import org.kie.api.command.Command;
 import org.kie.api.command.KieCommands;
 import org.kie.api.runtime.ExecutionResults;
+import org.kie.server.api.exception.KieServicesException;
 import org.kie.server.api.marshalling.MarshallingFormat;
 import org.kie.server.api.model.KieServiceResponse.ResponseType;
 import org.kie.server.api.model.ServiceResponse;
@@ -15,6 +16,8 @@ import org.kie.server.client.KieServicesClient;
 import org.kie.server.client.KieServicesConfiguration;
 import org.kie.server.client.KieServicesFactory;
 import org.kie.server.client.RuleServicesClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.redhat.loja_online.Compra;
@@ -30,6 +33,7 @@ public class KieClientService {
 
 	KieCommands commandsFactory = KieServices.Factory.get().getCommands();
 	RuleServicesClient rulesClient = null;
+	Logger logger = LoggerFactory.getLogger(getClass());
 
 	public KieClientService() {
 		KieServicesConfiguration conf = KieServicesFactory.newRestConfiguration(KIE_URL, KIE_USER, KIE_PASSWD);
@@ -53,14 +57,15 @@ public class KieClientService {
 			ExecutionResults results = executeResponse.getResult();
 
 			Compra c = (Compra) results.getValue("Compra");
-
+						
 			compra.setTotalDescontos(c.getTotalDescontos());
 			compra.setFrete(c.getFrete());
 			compra.setValorTotal(c.getValorTotal());
 			
 		} else {
 			String message = "Error calculating prices. " + executeResponse.getMsg();
-			throw new RuntimeException(message);
+			logger.error(executeResponse.getResult().toString());
+			throw new KieServicesException(message);
 		}
 		return compra;
 	}

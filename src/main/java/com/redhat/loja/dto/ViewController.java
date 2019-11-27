@@ -5,9 +5,12 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.kie.server.api.exception.KieServicesException;
 import org.primefaces.event.UnselectEvent;
 
 import com.redhat.loja.repository.CompraRepository;
@@ -79,9 +82,13 @@ public class ViewController {
 		System.out.println("==================\n");
 
 		// chama o DM para recalcular o novo valor da compra
-		this.compra = kieClient.calcularTotalCompra(compra);
+		try {
+			this.compra = kieClient.calcularTotalCompra(compra);
+		} catch (KieServicesException e) {
+			 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning!", e.getMessage()));
+		}
 
-		System.out.println("Após de enviar para calculo\n======");
+		System.out.println("Depois de enviar para calculo\n======");
 		System.out.println(this.compra.getFrete());
 		System.out.println(this.compra.getTotalDescontos());
 		System.out.println(this.compra.getValorTotal());

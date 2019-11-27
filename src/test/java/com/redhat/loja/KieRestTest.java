@@ -27,6 +27,7 @@ import org.kie.api.command.BatchExecutionCommand;
 import org.kie.api.command.Command;
 import org.kie.api.command.KieCommands;
 import org.kie.api.runtime.ExecutionResults;
+import org.kie.server.api.exception.KieServicesException;
 import org.kie.server.api.marshalling.MarshallingFormat;
 import org.kie.server.api.model.KieServiceResponse.ResponseType;
 import org.kie.server.api.model.ServiceResponse;
@@ -90,7 +91,7 @@ public class KieRestTest {
 	}
 
 	@Test
-//	@Ignore
+	@Ignore
 	/**
 	 * Demonstra como invocar o Decision Manager sem utilizar a API gerando todo o JSON manualmente
 	 */
@@ -121,7 +122,7 @@ public class KieRestTest {
 	}
 
 	@Test
-//	@Ignore
+	@Ignore
 	/**
 	 * Demonstra como invocar o Decision Manager sem utilizar a API gerando JSON através de classes pojo.
 	 */
@@ -165,7 +166,8 @@ public class KieRestTest {
 	@Test
 	@Ignore
 	/**
-	 * Demonstra como invocar o Decision Manager através da API Java
+	 * Demonstra como invocar o Decision Manager através da API Java. 
+	 * 
 	 */
 	public void testCallJavaAPI() {
 		try {
@@ -214,9 +216,9 @@ public class KieRestTest {
 			} else {
 
 				String message = "Error calculating prices. " + executeResponse.getMsg();
-				throw new RuntimeException(message);
+				throw new KieServicesException(message);
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			throw e;
 		}
@@ -224,7 +226,7 @@ public class KieRestTest {
 	}
 
 	@Test
-	@Ignore
+//	@Ignore
 	/**
 	 * 	Um cliente de nivel 1 quando comprar acima de 10 itens deve ter 5% de desconto
 	 */
@@ -274,6 +276,55 @@ public class KieRestTest {
 		}
 
 	}
+	
+	@Test
+	/**
+	 * 	Um cliente de nivel 5 quando comprar qualquer item não paga frete e recebe 25% de desconto
+	 */
+	public void validarDescontoParaClienteNivel5() {
+
+		KieServicesConfiguration conf = KieServicesFactory
+				.newRestConfiguration("http://localhost:8080/kie-server/services/rest/server", "rhdmAdmin", "r3dh4t1!");
+		conf.setMarshallingFormat(MarshallingFormat.JSON);
+		KieServicesClient kieServicesClient = KieServicesFactory.newKieServicesClient(conf);
+
+		RuleServicesClient rulesClient = kieServicesClient.getServicesClient(RuleServicesClient.class);
+
+		List<ProdutoCompra> prods = new ArrayList<>();
+		prods.add(ProdutoCompra.builder()
+				.produto(Produto.builder().codigo("123").descricao("abc").valorUnitario(100.0).build()).quantidade(1).valorTotal(100.0)
+				.build());		
+
+		Compra compra = Compra.builder().cliente(Cliente.builder().nivel(5).build()).totalDescontos(0.0)
+				.valorTotal(0.00).produtos(prods).build();
+
+		KieCommands commandsFactory = KieServices.Factory.get().getCommands();
+		List<Command<?>> commands = new ArrayList<>();
+
+		commands.add(commandsFactory.newInsert(compra, "Compra", true, "DEFAULT"));
+		commands.add(commandsFactory.newStartProcess("totalizar"));
+		commands.add(commandsFactory.newFireAllRules());
+
+		BatchExecutionCommand batchCommand = commandsFactory.newBatchExecution(commands, KIE_SESSION_NAME);
+		ServiceResponse<ExecutionResults> executeResponse = rulesClient.executeCommandsWithResults(CONTAINER_ID,
+				batchCommand);
+
+		if (executeResponse.getType() == ResponseType.SUCCESS) {
+			ExecutionResults results = executeResponse.getResult();
+
+			Compra c = (Compra) results.getValue("Compra");
+
+			assertThat(c.getTotalDescontos(), is(0.25));
+			assertThat(c.getFrete(), is(0.0));
+			assertThat(c.getValorTotal(), is(75.0));
+
+		} else {
+
+			String message = "Error calculating prices. " + executeResponse.getMsg();
+			throw new RuntimeException(message);
+		}
+
+	}
 
 	private Compra extractResult(String post) {
 
@@ -301,4 +352,22 @@ public class KieRestTest {
 		return sb.toString();
 	}
 
+	/**
+	 
+	 rule "zerar frete quando nao houver itens"
+dialect "java"
+ruleflow-group "calcular_total_compra"
+when
+    $compra : Compra( $produtos : produtos );
+    eval($produtos.size() > 0)
+then
+	$compra.setFrete(0.0);
+    $compra.setValorTotal(0.0);
+    $compra.setTotalDescontos(0.0);
+    update($compra);
+end
+	 
+	 **/
+	 
+	
 }
